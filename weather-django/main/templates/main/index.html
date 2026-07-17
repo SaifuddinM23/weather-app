@@ -1,49 +1,336 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
-
+<html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>weather</title>
-  <!-- Latest compiled and minified CSS -->
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Weather Dashboard</title>
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- FontAwesome Icons -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <!-- Google Fonts: Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-  <!-- jQuery library -->
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-
-  <!-- Latest compiled JavaScript -->
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
-
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%);
+      color: #f8fafc;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .navbar {
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .glass-card {
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 1.25rem;
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+      transition: all 0.3s ease;
+    }
+    .glass-card:hover {
+      border-color: rgba(255, 255, 255, 0.15);
+      box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.5);
+    }
+    .weather-main-temp {
+      font-size: 5rem;
+      font-weight: 700;
+      line-height: 1;
+      background: linear-gradient(to right, #38bdf8, #818cf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .weather-unit-btn {
+      cursor: pointer;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 0.5rem;
+      padding: 0.25rem 0.5rem;
+      background: rgba(255, 255, 255, 0.05);
+      color: #94a3b8;
+      transition: all 0.2s;
+    }
+    .weather-unit-btn.active {
+      background: #38bdf8;
+      color: #0f172a;
+      border-color: #38bdf8;
+      font-weight: 600;
+    }
+    .recent-city-badge {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #e2e8f0;
+      padding: 0.5rem 1rem;
+      border-radius: 2rem;
+      text-decoration: none;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .recent-city-badge:hover {
+      background: rgba(56, 189, 248, 0.15);
+      border-color: #38bdf8;
+      color: #38bdf8;
+      transform: translateY(-2px);
+    }
+    .metric-card {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 1rem;
+      padding: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .metric-icon {
+      font-size: 1.5rem;
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.1);
+      width: 3.5rem;
+      height: 3.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 0.75rem;
+    }
+    .form-control-lg {
+      background: rgba(255, 255, 255, 0.05) !important;
+      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+      color: #f8fafc !important;
+      border-radius: 1rem 0 0 1rem !important;
+    }
+    .form-control-lg::placeholder {
+      color: #64748b;
+    }
+    .form-control-lg:focus {
+      border-color: #38bdf8 !important;
+      box-shadow: 0 0 0 0.25rem rgba(56, 189, 248, 0.2) !important;
+    }
+    .btn-search {
+      border-radius: 0 1rem 1rem 0 !important;
+      background: linear-gradient(135deg, #38bdf8, #4f46e5);
+      border: none;
+      color: white;
+      font-weight: 600;
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+      transition: all 0.2s;
+    }
+    .btn-search:hover {
+      opacity: 0.9;
+      transform: translateY(0);
+    }
+    .error-alert {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      color: #fca5a5;
+      border-radius: 1rem;
+    }
+  </style>
 </head>
-
 <body>
-  <nav class="row" style="background: green; color: white;">
-    <h1 class="col-md-3 text-center">weather</h1>
-  </nav>
-  <br />
-  <br />
-  <center class="row">
-    <form method="post" class="col-md-6 col-md-offset-3">
-      {% csrf_token %}
-      <div class="input-group">
-        <input type="text" class="form-control" name="city" placeholder="Search">
-        <div class="input-group-btn">
-          <button class="btn btn-default" type="submit">
-            <i class="glyphicon glyphicon-search"></i>
-          </button>
-        </div>
-        <form>
-  </center>
-  <div class="row">
-    {% if country_code and coordinate and temp and pressure and humidity %}
-    <div class="col-md-6 col-md-offset-3">
-      <h3>country code : {{country_code}}</h1>
-        <h5>coordinate : {{coordinate}}</h5>
-        <h5>temp : {{temp}}</h5>
-        <h5>pressure : {{pressure}} </h5>
-        <h5>humidity : {{humidity}}</h5>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark py-3">
+    <div class="container">
+      <a class="navbar-brand d-flex align-items-center gap-2" href="/">
+        <i class="fa-solid fa-cloud-sun-rain fs-3 text-info"></i>
+        <span class="fw-bold tracking-tight">WeatherSphere</span>
+      </a>
+      <span class="navbar-text text-muted d-none d-sm-inline-block">
+        Built with Django & OpenWeatherMap
+      </span>
     </div>
-    {% endif %}
-  </div>
-</body>
+  </nav>
 
+  <main class="container my-5 flex-grow-1">
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        
+        <!-- Search bar -->
+        <div class="glass-card p-4 mb-4">
+          <form method="post" action="/">
+            {% csrf_token %}
+            <div class="input-group">
+              <input type="text" class="form-control form-control-lg" name="city" placeholder="Enter city name (e.g. Paris, Tokyo...)" value="{{ searched_city|default:'' }}" required>
+              <button class="btn btn-search px-4" type="submit">
+                <i class="fa-solid fa-magnifying-glass me-2"></i>Search
+              </button>
+            </div>
+          </form>
+
+          <!-- Recent Searches -->
+          {% if search_history %}
+          <div class="mt-4">
+            <small class="text-muted d-block mb-2"><i class="fa-solid fa-history me-1"></i> Recent Searches</small>
+            <div class="d-flex flex-wrap gap-2">
+              {% for recent in search_history %}
+              <a href="/?city={{ recent }}" class="recent-city-badge">
+                <i class="fa-solid fa-location-dot text-muted"></i>
+                {{ recent }}
+              </a>
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- Error Handling -->
+        {% if error_message %}
+        <div class="alert error-alert p-4 mb-4 d-flex align-items-start gap-3" role="alert">
+          <i class="fa-solid fa-circle-exclamation fs-3 mt-1"></i>
+          <div>
+            <h5 class="alert-heading fw-bold mb-1">Search Error</h5>
+            <p class="mb-0">{{ error_message }}</p>
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Weather Results -->
+        {% if weather %}
+        <div class="glass-card p-5">
+          <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-4 mb-5 border-bottom border-secondary pb-4">
+            <div>
+              <div class="d-flex align-items-center gap-2 mb-1">
+                <h1 class="fw-bold m-0">{{ weather.cityname }}</h1>
+                <span class="badge bg-info text-dark fw-bold fs-6">{{ weather.country_code }}</span>
+              </div>
+              <p class="text-muted m-0"><i class="fa-solid fa-map-pin me-1"></i> Coordinates: {{ weather.coordinate }}</p>
+            </div>
+            
+            <div class="text-md-end">
+              <div class="d-flex align-items-center gap-3">
+                <img src="http://openweathermap.org/img/wn/{{ weather.icon }}@2x.png" alt="{{ weather.description }}" class="weather-icon" style="width: 70px; height: 70px; filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.4));">
+                <div>
+                  <h3 class="fw-semibold m-0 text-capitalize">{{ weather.description }}</h3>
+                  <p class="text-muted m-0">Feels like <span id="feels-like-val">{{ weather.feels_like_c }}</span><span id="feels-like-unit">°C</span></p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row align-items-center mb-5">
+            <!-- Big Temp Display -->
+            <div class="col-md-6 text-center text-md-start mb-4 mb-md-0">
+              <div class="d-inline-flex align-items-start">
+                <span class="weather-main-temp" id="main-temp-val">{{ weather.temp_c }}</span>
+                <span class="fs-1 fw-bold text-info ms-2" id="main-temp-unit">°C</span>
+              </div>
+              <!-- Temp toggles -->
+              <div class="d-flex justify-content-center justify-content-md-start gap-2 mt-3">
+                <button class="weather-unit-btn active" onclick="switchUnit('C', '{{ weather.temp_c }}', '{{ weather.feels_like_c }}')">°C</button>
+                <button class="weather-unit-btn" onclick="switchUnit('F', '{{ weather.temp_f }}', '{{ weather.feels_like_f }}')">°F</button>
+                <button class="weather-unit-btn" onclick="switchUnit('K', '{{ weather.temp_k }}', '{{ weather.feels_like_c }}')">K</button>
+              </div>
+            </div>
+
+            <!-- Details List -->
+            <div class="col-md-6">
+              <div class="row g-3">
+                <div class="col-6">
+                  <div class="metric-card">
+                    <div class="metric-icon">
+                      <i class="fa-solid fa-droplet"></i>
+                    </div>
+                    <div>
+                      <small class="text-muted d-block">Humidity</small>
+                      <span class="fw-bold fs-5">{{ weather.humidity }}%</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-6">
+                  <div class="metric-card">
+                    <div class="metric-icon">
+                      <i class="fa-solid fa-gauge-high"></i>
+                    </div>
+                    <div>
+                      <small class="text-muted d-block">Pressure</small>
+                      <span class="fw-bold fs-5">{{ weather.pressure }} hPa</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-6">
+                  <div class="metric-card">
+                    <div class="metric-icon">
+                      <i class="fa-solid fa-wind"></i>
+                    </div>
+                    <div>
+                      <small class="text-muted d-block">Wind Speed</small>
+                      <span class="fw-bold fs-5">{{ weather.wind_speed }}</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-6">
+                  <div class="metric-card">
+                    <div class="metric-icon">
+                      <i class="fa-solid fa-cloud"></i>
+                    </div>
+                    <div>
+                      <small class="text-muted d-block">Cloudiness</small>
+                      <span class="fw-bold fs-5">{{ weather.clouds }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+      </div>
+    </div>
+  </main>
+
+  <footer class="text-center py-4 mt-auto border-top border-secondary" style="background: rgba(15, 23, 42, 0.4);">
+    <div class="container">
+      <p class="text-muted m-0">Made with ❤️ for SaifuddinM23</p>
+    </div>
+  </footer>
+
+  <!-- Bootstrap Bundle with Popper JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    function switchUnit(unit, temp, feelsLike) {
+      // Update buttons active class
+      const btns = document.querySelectorAll('.weather-unit-btn');
+      btns.forEach(btn => {
+        if (btn.innerText === 'K' && unit === 'K') {
+          btn.classList.add('active');
+        } else if (btn.innerText === '°' + unit) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+
+      // Update unit label
+      const tempUnit = document.getElementById('main-temp-unit');
+      const feelsLikeUnit = document.getElementById('feels-like-unit');
+      tempUnit.innerText = (unit === 'K' ? 'K' : '°' + unit);
+      feelsLikeUnit.innerText = (unit === 'K' ? 'K' : '°' + unit);
+
+      // Update value
+      const tempVal = document.getElementById('main-temp-val');
+      const feelsLikeVal = document.getElementById('feels-like-val');
+      
+      if (unit === 'C') {
+        tempVal.innerText = temp;
+        feelsLikeVal.innerText = feelsLike;
+      } else if (unit === 'F') {
+        tempVal.innerText = temp;
+        feelsLikeVal.innerText = feelsLike;
+      } else if (unit === 'K') {
+        tempVal.innerText = parseFloat(temp).toFixed(1);
+        const feelsLikeC = parseFloat('{{ weather.feels_like_c }}');
+        feelsLikeVal.innerText = (feelsLikeC + 273.15).toFixed(1);
+      }
+    }
+  </script>
+</body>
 </html>

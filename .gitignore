@@ -1,0 +1,16 @@
+# Virtual environments
+env/
+venv/
+ENV/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Local databases
+*.sqlite3
+
+# OS metadata
+.DS_Store
